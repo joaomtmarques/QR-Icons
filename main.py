@@ -5,6 +5,9 @@ from os import system, path, getcwd, makedirs
 import os
 from PIL import Image, ImageDraw
 
+def get_downloads_dir():
+    return path.join(os.path.expanduser('~'), 'Downloads')
+    
 if len(sys.argv) > 1:
     input_data = sys.argv[1]
 else:
@@ -95,12 +98,12 @@ while True:
                 except OSError as e:
                     print(f'Erro ao criar o diretório: {e}.')
 
-    qrcode_path = path.join(save_path, qrcode_name)
     break
 
 name = [*'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890']
 qrcode_name = ''.join(random.choices(name, k = 10)) + '.png'
 img.save(qrcode_name)
+qrcode_path = path.join(save_path, qrcode_name)
 
 print(f'QR Code foi guardado em {qrcode_path}')
 
