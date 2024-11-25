@@ -1,16 +1,26 @@
 import qrcode
 import random
 import sys
-from os import system, path, getcwd, makedirs
+from os import system, path, makedirs
 import os
 from PIL import Image, ImageDraw
 
+def clear():
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
+
 def get_downloads_dir():
     return path.join(os.path.expanduser('~'), 'Downloads')
+
+def get_desktop_dir():
+    return path.join(os.path.expanduser('~'), 'Desktop')
     
 if len(sys.argv) > 1:
     input_data = sys.argv[1]
 else:
+    clear()
     input_data = input('Url do qr code: ')
 
 qr = qrcode.QRCode(
@@ -25,6 +35,7 @@ qr.make(fit = True)
 # muda as cores do qr e do background se for necessário (funciona com rgb ou nomes de cores em string)
 img = qr.make_image(fill_color = 'black', back_color = 'white').convert('RGB')
 
+clear()
 if input('Adicionar imagem dentro do qr code? (Caso queiras, responde com \'Y\'): ').strip().upper() == ('Y'):
     qr_width, qr_height = img.size
     
@@ -39,18 +50,12 @@ if input('Adicionar imagem dentro do qr code? (Caso queiras, responde com \'Y\')
     while True:
         try:
             icon_path = input('Path do png: ').strip()
+            clear()
             
             icon_path = path.normpath(icon_path)
-
-            if not path.isfile(icon_path):
-                raise FileNotFoundError(f'O arquivo \'{icon_path}\' não foi encontrado. Verifica o caminho e tenta novamente.')
-            
-            if not icon_path.lower().endswith('.png'):
-                raise ValueError('A imagem deve estar no formato PNG.')
-            
             icon = Image.open(icon_path).convert('RGBA')
             
-            print(f'Imagem \'{icon_path}\' carregada com sucesso.')
+            print(f'Imagem \'{icon_path}\' carregada com sucesso.\n')
             break
 
         except FileNotFoundError as e:
@@ -60,7 +65,7 @@ if input('Adicionar imagem dentro do qr code? (Caso queiras, responde com \'Y\')
             print(f'Erro: {e}. Por favor, escolhe uma imagem no formato correto.')
         
         except OSError as e:
-            print(f'Erro ao abrir a imagem: {e}. O arquivo pode estar corrompido ou não é uma imagem válida.')
+            print(f'Erro ao abrir a imagem: {e}. O arquivo pode estar corrompido ou o path pode estar mal escrito (não colocar entre aspas).')
 
     #tamanho da imagem
     max_icon_size = qr_width // 4
@@ -74,37 +79,35 @@ if input('Adicionar imagem dentro do qr code? (Caso queiras, responde com \'Y\')
     
     img.paste(icon, icon_position, mask=icon)
 
-
+clear()
 while True:
-    save_path = input(f'Escolhe o diretório onde queres por o qr code (Predefinido é nos Downloads): ').strip()
+    save_path = input(f'Escolhe o diretório onde queres por o qr code (predefinido é nos Downloads).\nGarante que escreves o path completo (Ex: \'C:\...\' ou \'~\...\'): ').strip()
+    path_aceite = True
 
-    if save_path == '':
+    if save_path.strip() == '':
         save_path = get_downloads_dir()
-        
+
     else:
-        if os.name == 'nt':
-            if not (path.splitdrive(save_path)[0] or '').endswith(':'):
-                print('Caminho inválido. Vê se o caminho começa com a letra da unidade, ex: \'C:\'.')
-
-        else:
-            if not save_path.startswith('/'):
-                print('Caminho inválido. Certifica-te de que o caminho comece com \'/\'.')
-
         if not path.isdir(save_path):
-            if input(f'O diretório \'{save_path}\' não existe. Queres criá-lo? (Y/N): ').strip().upper() == 'Y':
+            if input(f'O diretório {get_desktop_dir()}\\{save_path} não existe. Queres criá-lo? (Y/N): ').strip().upper() == 'Y':
+                clear()
                 try:
                     makedirs(save_path)
-                    print(f'Diretório \'{save_path}\' criado com sucesso.')
+                    print(f'Diretório {get_desktop_dir()}\\{save_path} criado com sucesso.')
+                    path_aceite = True
                 except OSError as e:
+                    path_aceite = False
                     print(f'Erro ao criar o diretório: {e}.')
-
-    break
+    
+    if path_aceite == True:
+        break
 
 name = [*'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890']
 qrcode_name = ''.join(random.choices(name, k = 10)) + '.png'
-img.save(qrcode_name)
+
 qrcode_path = path.join(save_path, qrcode_name)
+img.save(qrcode_path)
 
-print(f'QR Code foi guardado em {qrcode_path}')
+print(f'QR Code foi guardado em {qrcode_path} !!')
 
-system(qrcode_name)
+system(qrcode_path)
