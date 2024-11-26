@@ -79,7 +79,6 @@ if input('Adicionar imagem dentro do qr code? (Caso queiras, responde com \'Y\')
     
     img.paste(icon, icon_position, mask=icon)
 
-clear()
 while True:
     save_path = input(f'Escolhe o diretório onde queres por o qr code (predefinido é nos Downloads).\nGarante que escreves o path completo (Ex: \'C:\...\' ou \'~\...\'): ').strip()
     path_aceite = True
@@ -98,6 +97,9 @@ while True:
                 except OSError as e:
                     path_aceite = False
                     print(f'Erro ao criar o diretório: {e}.')
+            else:
+                path_aceite = False
+                clear()
     
     if path_aceite == True:
         break
